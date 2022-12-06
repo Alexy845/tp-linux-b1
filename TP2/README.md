@@ -252,3 +252,79 @@ success
 ## III. Your own services
 
 ### 1. Au cas où vous auriez oublié
+
+### 2. Analyse des services existants
+
+🌞 Afficher le fichier de service SSH
+
+```bash
+[alexy@TP2 ~]$ sudo systemctl status sshd
+● sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; vendor preset: enabled)
+
+[alexy@TP2 ~]$ sudo cat /usr/lib/systemd/system/sshd.service | grep ExecStart=
+ExecStart=/usr/sbin/sshd -D $OPTIONS
+
+[alexy@TP2 ~]$ sudo systemctl start sshd
+```
+
+
+
+
+🌞 Afficher le fichier de service NGINX
+
+```bash
+[alexy@TP2 conf.d]$ systemctl status nginx | grep ExecStart=
+    Process: 825 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+```
+
+### 3. Création de service
+
+🌞 Créez le fichier /etc/systemd/system/tp2_nc.service
+
+```bash
+[alexy@TP2 ~]$ echo $RANDOM
+16045
+
+[alexy@TP2 ~]$ sudo cat /etc/systemd/system/tp2_nc.service
+[Unit]
+Description=Super netcat tout fou
+
+[Service]
+ExecStart=/usr/bin/nc -l 16045
+
+[alexy@TP2 ~]$ sudo firewall-cmd --add-port=16045/tcp --permanent
+success
+```
+
+🌞 Indiquer au système qu'on a modifié les fichiers de service
+
+🌞 Démarrer notre service de ouf
+
+```bash
+[alexy@TP2 ~]$ sudo systemctl start tp2_nc
+```
+🌞 Vérifier que ça fonctionne
+```bash
+[alexy@TP2 ~]$ sudo systemctl status tp2_nc
+● tp2_nc.service - Super netcat tout fou
+
+[alexy@TP2 ~]$ sudo ss -alpnt | grep 16045
+LISTEN 0      10           0.0.0.0:16045      0.0.0.0:*    users:(("nc",pid=1085,fd=4))                              
+LISTEN 0      10              [::]:16045         [::]:*    users:(("nc",pid=1085,fd=3))                              
+
+
+
+première vm :
+[alexy@TP2 ~]$ nc -l 16045
+
+
+vm test:
+[alexy@TP2 ~] nc 192.168.56.104 16045
+
+la connexion fonctionne
+```
+
+🌞 Les logs de votre service
+
+
