@@ -204,47 +204,22 @@ drwxr-xr-x.  2 root root    6 Oct 31 16:37 default.d
         }
     }
 
-# Settings for a TLS enabled server.
-#
-#    server {
-#        listen       443 ssl http2;
-#        listen       [::]:443 ssl http2;
-#        server_name  _;
-#        root         /usr/share/nginx/html;
-#
-#        ssl_certificate "/etc/pki/nginx/server.crt";
-#        ssl_certificate_key "/etc/pki/nginx/private/server.key";
-#        ssl_session_cache shared:SSL:1m;
-#        ssl_session_timeout  10m;
-#        ssl_ciphers PROFILE=SYSTEM;
-#        ssl_prefer_server_ciphers on;
-#
-#        # Load configuration files for the default server block.
-#        include /etc/nginx/default.d/*.conf;
-#
-#        error_page 404 /404.html;
-#            location = /40x.html {
-#        }
-#
-#        error_page 500 502 503 504 /50x.html;
-#            location = /50x.html {
-#        }
-#    }
-
-}
-
 [alexy@TP2 nginx]$ sudo cat nginx.conf | grep include
-include /usr/share/nginx/modules/*.conf;
-    include             /etc/nginx/mime.types;
-    # See http://nginx.org/en/docs/ngx_core_module.html#include
     include /etc/nginx/conf.d/*.conf;
-        include /etc/nginx/default.d/*.conf;
-#        include /etc/nginx/default.d/*.conf;
 ```
 
 ## 3. Déployer un nouveau site web
 
 🌞 Créer un site web
+
+mkdir www dans /var
+
+mkdir tp2_linux
+
+nano index.html
+```bash
+<h1>MEOW mon premier serveur web</h1>
+```
 
 🌞 Adapter la conf NGINX
 
@@ -255,7 +230,25 @@ include /usr/share/nginx/modules/*.conf;
 [alexy@TP2 conf.d]$ sudo firewall-cmd --add-port=25970/tcp --permanent
 success
 
+ [alexy@TP2 conf.d]$ sudo cat tp2_linux.conf
+server {
+  # le port choisi devra être obtenu avec un 'echo $RANDOM' là encore
+  listen 25970;
+
+  root /var/WWW/tp2_linux;
+}
+
+
 [alexy@TP2 conf.d]$  sudo firewall-cmd --reload
 success
 [alexy@TP2 conf.d]$  sudo systemctl restart nginx
 ```
+🌞 Visitez votre super site web
+```bash
+[alexy@TP2 conf.d]$ curl http://192.168.56.104:25970
+<h1>MEOW mon premier serveur web</h1>
+```
+
+## III. Your own services
+
+### 1. Au cas où vous auriez oublié
