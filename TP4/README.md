@@ -90,7 +90,155 @@ mount: /mnt/storage does not contain SELinux labels.
 
 ## Partie 2 : Serveur de partage de fichiers
 
-🌞 Donnez les commandes réalisées sur le serveur NFS storage.tp4.linux
+
+🌞 **Donnez les commandes réalisées sur le serveur NFS `storage.tp4.linux`**
+
+- contenu du fichier `/etc/exports` dans le compte-rendu notamment
+
+```
+[dora@storage ~]$ sudo mkdir /storage/site_web_1 -p
+```
+
+```
+[dora@storage ~]$ sudo mkdir /storage/site_web_2 -p
+```
+
+```
+[dora@storage ~]$ ls -dl /storage/site_web_1
+drwxr-xr-x. 2 root root 6 Dec 13 12:23 /storage/site_web_1/
+```
+
+```
+[dora@storage ~]$ ls -dl /storage/site_web_2
+drwxr-xr-x. 2 root root 6 Dec 13 12:23 /storage/site_web_2/
+```
+
+```
+[dora@storage ~]$ sudo chown nobody /storage/site_web_1
+```
+
+```
+[dora@storage ~]$ sudo chown nobody /storage/site_web_2
+```
+
+```
+[dora@storage ~]$ cat /etc/exports
+export/site_web_1      10.4.1.58(rw,sync,no_subtree_check)
+export/site_web_2      10.4.1.58(rw,sync,no_subtree_check)
+```
+
+```
+[dora@storage ~]$ sudo systemctl enable nfs-server
+Created symlink /etc/systemd/system/multi-user.target.wants/nfs-server.service → /usr/lib/systemd/system/nfs-server.service.
+```
+
+```
+[dora@storage ~]$ sudo systemctl start nfs-server
+```
+
+```
+[dora@storage ~]$ sudo systemctl status nfs-server
+● nfs-server.service - NFS server and services
+     Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; enabled; vendo>
+    Drop-In: /run/systemd/generator/nfs-server.service.d
+             └─order-with-mounts.conf
+     Active: active (exited) since Tue 2022-12-13 12:03:36 CET; 7s ago
+    Process: 11240 ExecStartPre=/usr/sbin/exportfs -r (code=exited, status=0/SU>
+    Process: 11241 ExecStart=/usr/sbin/rpc.nfsd (code=exited, status=0/SUCCESS)
+    Process: 11257 ExecStart=/bin/sh -c if systemctl -q is-active gssproxy; the>
+   Main PID: 11257 (code=exited, status=0/SUCCESS)
+        CPU: 13ms
+
+Dec 13 12:03:36 storage.tp4.linux systemd[1]: Starting NFS server and services.>
+Dec 13 12:03:36 storage.tp4.linux systemd[1]: Finished NFS server and services.
+```
+
+```
+[dora@storage ~]$ sudo firewall-cmd --permanent --list-all |grep services  services: cockpit dhcpv6-client ssh
+```
+
+```
+[dora@storage ~]$ sudo firewall-cmd --permanent --add-service=nfs
+success
+```
+
+```
+[dora@storage ~]$ sudo firewall-cmd --permanent --add-service=mountd
+success
+```
+
+```
+[dora@storage ~]$ sudo firewall-cmd --permanent --add-service=rpc-bind
+success
+```
+
+```
+[dora@storage ~]$ sudo firewall-cmd --reload
+success
+```
+
+```
+[dora@storage ~]$ sudo firewall-cmd --permanent --list-all |grep services
+  services: cockpit dhcpv6-client mountd nfs rpc-bind ssh
+```
+
+🌞 **Donnez les commandes réalisées sur le client NFS `web.tp4.linux`**
+
+- contenu du fichier `/etc/fstab` dans le compte-rendu notamment
+
+```
+[dora@web ~]$ sudo mkdir -p /var/www/site_web_1
+```
+
+```
+[dora@web ~]$ sudo mkdir -p /var/www/site_web_2
+```
+
+```
+[dora@web ~]$ sudo mount 10.4.1.60:/storage/site_web_1 /var/www/site_web_1
+```
+
+```
+[dora@web ~]$ sudo mount 10.4.1.60:/storage/site_web_2 /var/www/site_web_2
+```
+
+```
+[dora@web ~]$ df -h
+Filesystem                     Size  Used Avail Use% Mounted on
+devtmpfs                       462M     0  462M   0% /dev
+tmpfs                          481M     0  481M   0% /dev/shm
+tmpfs                          193M  4.8M  188M   3% /run
+/dev/mapper/rl-root            6.5G  1.2G  5.4G  18% /
+/dev/sda1                     1014M  210M  805M  21% /boot
+tmpfs                           97M     0   97M   0% /run/user/1000
+10.4.1.60:/storage/site_web_1  6.5G  1.2G  5.4G  18% /var/www/site_web_1
+10.4.1.60:/storage/site_web_2  6.5G  1.2G  5.4G  18% /var/www/site_web_2
+```
+
+```
+[dora@web ~]$ sudo touch /var/www/site_web_1/site_web_1.test
+```
+
+```
+[dora@web ~]$ sudo touch /var/www/site_web_2/site_web_2.test
+```
+
+```
+[dora@web ~]$ ls -l /var/www/site_web_1/site_web_1.test
+-rw-r--r--. 1 nobody nobody 0 Jan  2 09:47 /var/www/site_web_1/site_web_1.test
+```
+
+```
+[dora@web ~]$ ls -l /var/www/site_web_2/site_web_2.test
+-rw-r--r--. 1 nobody nobody 0 Jan  2 09:48 /var/www/site_web_2/site_web_2.test
+```
+
+```
+[dora@web ~]$ sudo nano /etc/fstab
+[dora@web ~]$ cat /etc/fstab
+10.4.1.60:/storage/site_web_1   /var/www/site_web_1     nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
+10.4.1.60:/storage/site_web_2   /var/www/site_web_2     nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
+```
 
 ## Partie 3 : Serveur web
 
