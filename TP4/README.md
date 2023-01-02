@@ -370,3 +370,59 @@ bijour
     include /etc/nginx/conf.d/*.conf;
 
 ```
+
+🌞 Créez le fichier de configuration pour le premier site
+
+```
+[alexy@web conf.d]$ sudo cat /etc/nginx/nginx.conf | grep server
+# Settings for a TLS enabled server.
+#    server {
+#        server_name  _;
+#        ssl_certificate "/etc/pki/nginx/server.crt";
+#        ssl_certificate_key "/etc/pki/nginx/private/server.key";
+#        ssl_prefer_server_ciphers on;
+#        # Load configuration files for the default server block.
+```
+
+🌞 Créez le fichier de configuration pour le deuxième site
+
+```
+[alexy@web conf.d]$ sudo cat site_web_2.conf
+    server {
+        listen       8888;
+        listen       [::]:8888;
+        server_name  _;
+        root         /var/www/site_web_2/index.html;
+
+        # Load configuration files for the default server block.
+        include /etc/nginx/default.d/*.conf;
+
+        error_page 404 /404.html;
+        location = /404.html {
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+        }
+    }
+
+[alexy@web conf.d]$ sudo firewall-cmd --add-port=8888/tcp --permanent
+success
+```
+
+🌞 Prouvez que les deux sites sont disponibles
+
+```
+[alexy@web conf.d]$ curl -s http://192.168.56.104:8080 | head -n 5
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/1.20.1</center>
+
+[alexy@web conf.d]$ curl -s http://192.168.56.104:8888 | head -n 5
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/1.20.1</center>
