@@ -426,3 +426,61 @@ success
 <body>
 <center><h1>404 Not Found</h1></center>
 <hr><center>nginx/1.20.1</center>
+
+[alexy@db ~]$ sudo mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 13
+Server version: 10.5.16-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> CREATE USER 'nextcloud'@'192.168.56.104' IDENTIFIED BY 'l';
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+Query OK, 0 rows affected, 1 warning (0.000 sec)
+
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'192.168.56.104';
+Query OK, 0 rows affected (0.002 sec)
+
+MariaDB [(none)]> FLUSH PRIVILEGES;
+```
+
+🌞 Exploration de la base de données
+
+```
+[alexy@web ~]$ sudo dnf install mysql
+
+[alexy@web ~]$ mysql -u nextcloud -h 192.168.56.105 -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 14
+Server version: 5.5.5-10.5.16-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| nextcloud          |
++--------------------+
+2 rows in set (0.00 sec)
+
+mysql> USE nextcloud;
+Database changed
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+```
+
+
+🌞 Trouver une commande SQL qui permet de lister tous les utilisateurs de la base de données
+
