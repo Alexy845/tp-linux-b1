@@ -211,5 +211,115 @@ alexy      13198     985  0 16:41 pts/1    00:00:00 grep --color=auto mariadb
 
 ### 1. Base de données
 
-🌞 Préparation de la base pour NextCloud
+🌞 **Préparation de la base pour NextCloud**
 
+
+```
+[alexy@db ~]$ sudo mysql -u root -p
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 19
+Server version: 10.5.16-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+```
+
+  - exécutez les commandes SQL suivantes :
+
+```sql
+-- Création d'un utilisateur dans la base, avec un mot de passe
+-- L'adresse IP correspond à l'adresse IP depuis laquelle viendra les connexions. Cela permet de restreindre les IPs autorisées à se connecter.
+-- Dans notre cas, c'est l'IP de web.tp5.linux
+-- "pewpewpew" c'est le mot de passe hehe
+CREATE USER 'nextcloud'@'10.105.1.11' IDENTIFIED BY 'pewpewpew';
+
+-- Création de la base de donnée qui sera utilisée par NextCloud
+CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+-- On donne tous les droits à l'utilisateur nextcloud sur toutes les tables de la base qu'on vient de créer
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'10.105.1.11';
+
+-- Actualisation des privilèges
+FLUSH PRIVILEGES;
+
+-- C'est assez générique comme opération, on crée une base, on crée un user, on donne les droits au user sur la base
+```
+
+```
+MariaDB [(none)]> CREATE USER 'nextcloud'@'10.105.1.11' IDENTIFIED BY 'pewpewpew';
+Query OK, 0 rows affected (0.007 sec)
+
+MariaDB [(none)]> CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+Query OK, 1 row affected (0.000 sec)
+
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'10.105.1.11';
+Query OK, 0 rows affected (0.009 sec)
+
+MariaDB [(none)]> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0.001 sec)
+```
+
+🌞 **Exploration de la base de données**
+
+```sql
+SHOW DATABASES;
+USE <DATABASE_NAME>;
+SHOW TABLES;
+```
+
+```
+[alexy@web ~]$ mysql -u nextcloud -h 10.105.1.12 -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 24
+Server version: 5.5.5-10.5.16-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| nextcloud          |
++--------------------+
+2 rows in set (0.00 sec)
+
+mysql> USE <DATABASE_NAME>;
+ERROR 1044 (42000): Access denied for user 'nextcloud'@'10.105.1.11' to database '<DATABASE_NAME>'
+mysql> USE nextcloud;
+Database changed
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+```
+
+🌞 **Trouver une commande SQL qui permet de lister tous les utilisateurs de la base de données**
+
+```
+MariaDB [(none)]> SELECT * FROM mysql.user;
+```
+
+### 2. Serveur Web et NextCloud
+
+🌞 Install de PHP
+
+```
+[alexy@web ~]$ sudo dnf config-manager --set-enabled crb
+[alexy@web ~]$ sudo dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-9.rpm -y
+Complete!
+[alexy@web ~]$  dnf module list php
+[alexy@web ~]$ sudo dnf module enable php:remi-8.1 -y
+Complete!
+[alexy@web ~]$ sudo dnf install -y php81-php
+Complete!
+```
+
+🌞 Install de tous les modules PHP nécessaires pour NextCloud
+```
+[alexy@web ~]$ sudo dnf install -y libxml2 openssl php81-php php81-php-ctype php81-php-curl php81-php-gd php81-php-iconv php81-php-json php81-php-libxml php81-php-mbstring php81-php-openssl php81-php-posix php81-php-session php81-php-xml php81-php-zip php81-php-zlib php81-php-pdo php81-php-mysqlnd php81-php-intl php81-php-bcmath php81-php-gmp
+```
